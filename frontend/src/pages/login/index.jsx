@@ -7,6 +7,7 @@ import Button from "../../components/button";
 import { useLoginMutation } from "../../slices/userApiSlice";
 import { setCredentials } from "../../slices/authSlice";
 import { toast } from "react-toastify";
+
 const LoginPage = () => {
   const [data, setData] = useState({
     email: "",
@@ -22,7 +23,7 @@ const LoginPage = () => {
 
   useEffect(() => {
     if (userInfo) {
-      navigate("/");
+      navigate("/dashboard");
     }
   }, [userInfo, navigate]);
 
@@ -36,7 +37,7 @@ const LoginPage = () => {
     try {
       const res = await login(data).unwrap();
       dispatch(setCredentials({ ...res }));
-      navigate("/");
+      navigate("/dashboard");
     } catch (err) {
       toast.error(err?.data?.message || err.message);
     }

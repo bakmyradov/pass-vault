@@ -5,9 +5,11 @@ import "react-toastify/dist/ReactToastify.css";
 const App = () => {
   return (
     <div>
-      <Header />
       <ToastContainer />
-      <Outlet />
+      <Header />
+      <div className="pt-24">
+        <Outlet />
+      </div>
     </div>
   );
 };

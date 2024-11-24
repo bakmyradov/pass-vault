@@ -16,6 +16,14 @@ const userSchema = mongoose.Schema(
       type: String,
       required: true,
     },
+    encryptedMasterPassword: {
+      type: String, // Master password encrypted with server password
+      required: false, // Added field
+    },
+    masterPasswordIV: {
+      type: String, // IV used to encrypt the master password
+      required: false, // Added field
+    },
   },
   {
     timestamps: true,

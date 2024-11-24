@@ -22,7 +22,7 @@ const Header = () => {
   };
 
   return (
-    <header className="w-full py-8 flex justify-between items-center px-10 absolute top-0 left-0">
+    <header className="w-full py-6 flex justify-between items-center px-10 absolute top-0 left-0 bg-black/10 shadow-lg">
       <Link to={"/"} className="text-3xl font-bold">
         VaultGuard
       </Link>
