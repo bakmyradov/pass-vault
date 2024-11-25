@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../slices/authSlice";
 import { useLogoutMutation } from "../slices/userApiSlice";
+import { apiSlice } from "../slices/apiSlice";
 import { useNavigate } from "react-router-dom";
 const Header = () => {
   const userInfo = useSelector((state) => state.auth.userInfo);
@@ -15,6 +16,7 @@ const Header = () => {
     try {
       await logoutMutation();
       dispatch(logout());
+      dispatch(apiSlice.util.resetApiState());
       navigate("/");
     } catch (error) {
       console.error(error);
