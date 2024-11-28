@@ -22,6 +22,7 @@ const DashboardPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [updatePassId, setUpdatePassId] = useState(null);
   const [selectedPasswordId, setSelectedPasswordId] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const { data: passwords = [], isLoading, refetch } = useUserPasswordsQuery();
 
@@ -31,6 +32,13 @@ const DashboardPage = () => {
     useGetPasswordQuery(selectedPasswordId, {
       skip: !selectedPasswordId,
     });
+
+  // Filter passwords based on the search query
+  const filteredPasswords = passwords.filter(
+    (password) =>
+      password.service.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      password.username.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   if (isLoading) {
     return null;
@@ -61,10 +69,14 @@ const DashboardPage = () => {
               </SheetContent>
             </Sheet>
           </div>
-          <Input placeholder="Search passwords" />
+          <Input
+            placeholder="Search passwords"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
           <div className="items">
             <div className="flex items-center justify-between mt-4 flex-col gap-y-4">
-              {passwords.map((password) => (
+              {filteredPasswords.map((password) => (
                 <div
                   key={password._id}
                   className="item rounded-md px-4 py-2 border drop-shadow-sm w-full flex justify-between"
@@ -139,6 +151,9 @@ const DashboardPage = () => {
                           <SheetTitle>
                             {password.service} credentials
                           </SheetTitle>
+                          <SheetDescription>
+                            View your credentials for {password.service}.
+                          </SheetDescription>
                         </SheetHeader>
                         <ShowPasswordModal
                           isFetchingPassword={isFetchingPassword}
