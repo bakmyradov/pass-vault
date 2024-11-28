@@ -1,17 +1,31 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import FormContainer from "../../components/form-container";
-import Input from "../../components/input";
-import Button from "../../components/button";
-import { useLoginMutation } from "../../slices/userApiSlice";
-import { setCredentials } from "../../slices/authSlice";
+import FormContainer from "@/components/formContainer";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { useLoginMutation } from "@/slices/userApiSlice";
+import { setCredentials } from "@/slices/authSlice";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "react-toastify";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
+
+const schema = yup.object().shape({
+  email: yup.string().email().required("Email is required"),
+  password: yup.string().required("Password is required"),
+});
 
 const LoginPage = () => {
-  const [data, setData] = useState({
-    email: "",
-    password: "",
+  const {
+    register,
+    formState: { errors },
+    handleSubmit,
+  } = useForm({
+    mode: "onBlur",
+    resolver: yupResolver(schema),
   });
 
   const navigate = useNavigate();
@@ -27,13 +41,7 @@ const LoginPage = () => {
     }
   }, [userInfo, navigate]);
 
-  const handleInputChange = (event) => {
-    const { name, value } = event.target;
-    setData((prevData) => ({ ...prevData, [name]: value }));
-  };
-
-  const submitHandler = async (e) => {
-    e.preventDefault();
+  const submitHandler = async (data) => {
     try {
       const res = await login(data).unwrap();
       dispatch(setCredentials({ ...res }));
@@ -42,28 +50,45 @@ const LoginPage = () => {
       toast.error(err?.data?.message || err.message);
     }
   };
+
   return (
     <FormContainer>
-      <h1 className="text-3xl font-bold mb-4 text-gray-800">Login</h1>
-      <form onSubmit={submitHandler} className="w-96 shadow-2xl px-8 py-8">
-        <Input
-          value={data.email}
-          name="email"
-          label="Email"
-          type="email"
-          onChange={handleInputChange}
-        />
-        <Input
-          value={data.password}
-          name="password"
-          label="Password"
-          type="password"
-          onChange={handleInputChange}
-        />
-        <Button disabled={isLoading}>
-          {isLoading ? "Loading..." : "Login"}
-        </Button>
-      </form>
+      <Card>
+        <CardHeader>
+          <CardTitle>Login</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form
+            onSubmit={handleSubmit(submitHandler)}
+            className="w-96 flex flex-col gap-y-6"
+          >
+            <div className="grid w-full max-w-sm items-center gap-1.5">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                {...register("email")}
+                name="email"
+                type="email"
+                placeholder="Enter email"
+              />
+              <p className="text-sm text-red-500">{errors.email?.message}</p>
+            </div>
+            <div className="grid w-full max-w-sm items-center gap-1.5">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                {...register("password")}
+                name="password"
+                label="Password"
+                type="password"
+                placeholder="Enter password"
+              />
+              <p className="text-sm text-red-500">{errors.password?.message}</p>
+            </div>
+            <Button disabled={isLoading} className={"mt-2"}>
+              {isLoading ? "Loading..." : "Login"}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
     </FormContainer>
   );
 };

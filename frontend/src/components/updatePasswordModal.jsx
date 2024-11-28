@@ -1,42 +1,64 @@
-import { useEffect, useState } from "react";
-import Input from "./input";
-import Button from "./button";
+import { useEffect } from "react";
+import { Input } from "./ui/input";
+import { Button } from "./ui/button";
+import { Label } from "./ui/label";
 import {
   useUpdatePasswordMutation,
   useGetPasswordQuery,
 } from "../slices/passwordsSlice";
 import { toast } from "react-toastify";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
+
+const schema = yup.object().shape({
+  service: yup.string().required("Service is required"),
+  username: yup.string().required("Username is required"),
+  password: yup.string().required("Password is required"),
+});
 
 const UpdatePasswordModal = ({ onClose, passwordId }) => {
-  const [updatePassword] = useUpdatePasswordMutation();
-  const [service, setService] = useState("");
-  const [username, setUsername] = useState("");
-  const [plaintextPassword, setPassword] = useState("");
-
   const { data: selectedPassword, isFetching } = useGetPasswordQuery(
     passwordId,
     {
       skip: !passwordId,
-    },
+    }
   );
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm({
+    defaultValues: {
+      service: "",
+      username: "",
+      password: "",
+    },
+    mode: "onBlur",
+    resolver: yupResolver(schema),
+  });
 
   useEffect(() => {
     if (selectedPassword) {
-      setService(selectedPassword.service);
-      setUsername(selectedPassword.username);
-      setPassword(selectedPassword.password);
+      reset({
+        service: selectedPassword.service,
+        username: selectedPassword.username,
+        password: selectedPassword.password,
+      });
     }
-  }, [selectedPassword]);
+  }, [selectedPassword, reset]);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const [updatePassword] = useUpdatePasswordMutation();
 
+  const onSubmit = async (data) => {
     try {
       await updatePassword({
         passwordId,
-        service,
-        username,
-        plaintextPassword,
+        service: data.service,
+        username: data.username,
+        plaintextPassword: data.password,
       });
       toast.success("Password updated successfully");
       onClose();
@@ -52,33 +74,38 @@ const UpdatePasswordModal = ({ onClose, passwordId }) => {
   }
 
   return (
-    <div className="modal bg-black/50 absolute top-0 left-0 w-screen h-screen z-[999] flex justify-center items-center">
-      <div className="modal-content w-96 bg-gray-200 px-5 py-8">
-        <div className="modal-header flex justify-between">
-          <h1 className="text-2xl">Update Password</h1>
-          <button onClick={onClose}>X</button>
+    <div className="mt-6">
+      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-y-6">
+        <div className="grid w-full max-w-sm items-center gap-1.5">
+          <Label htmlFor="service">Service</Label>
+          <Input
+            {...register("service")}
+            placeholder="e.g. Google, Facebook, etc."
+            name="service"
+          />
+          <p className="text-red-500 text-sm">{errors.service?.message}</p>
         </div>
-        <div className="mt-6">
-          <form onSubmit={handleSubmit}>
-            <Input
-              label="Service"
-              value={service}
-              onChange={(e) => setService(e.target.value)}
-            />
-            <Input
-              label="Username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-            />
-            <Input
-              label="Password"
-              value={plaintextPassword}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-            <Button type="submit">Update</Button>
-          </form>
+        <div className="grid w-full max-w-sm items-center gap-1.5">
+          <Label htmlFor="username">Username</Label>
+          <Input
+            {...register("username")}
+            name="username"
+            placeholder="Enter username"
+          />
+          <p className="text-red-500 text-sm">{errors.username?.message}</p>
         </div>
-      </div>
+        <div className="grid w-full max-w-sm items-center gap-1.5">
+          <Label htmlFor="password">Password</Label>
+          <Input
+            {...register("password")}
+            name="password"
+            type="text"
+            placeholder="Enter password"
+          />
+          <p className="text-red-500 text-sm">{errors.password?.message}</p>
+        </div>
+        <Button type="submit">Create</Button>
+      </form>
     </div>
   );
 };

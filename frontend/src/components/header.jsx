@@ -24,22 +24,24 @@ const Header = () => {
   };
 
   return (
-    <header className="w-full py-6 flex justify-between items-center px-10 absolute top-0 left-0 bg-black/10 shadow-lg">
-      <Link to={"/"} className="text-3xl font-bold">
-        VaultGuard
-      </Link>
-      <div className="flex gap-x-8 justify-center text-xl">
-        {userInfo ? (
-          <>
-            <Link to={"/dashboard"}>Dashboard</Link>
-            <button onClick={handleLogout}>Logout</button>
-          </>
-        ) : (
-          <>
-            <Link to={"/login"}>Login</Link>
-            <Link to={"/register"}>Register</Link>
-          </>
-        )}
+    <header className="sticky top-0 z-50 w-full border-b border-border/40 drop-shadow-md bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 dark:border-border">
+      <div className="flex h-20 items-center justify-between px-8">
+        <Link to={"/"} className="text-3xl font-bold">
+          VaultGuard
+        </Link>
+        <div className="flex gap-x-8 justify-center text-xl">
+          {userInfo ? (
+            <>
+              <Link to={"/dashboard"}>Dashboard</Link>
+              <button onClick={handleLogout}>Logout</button>
+            </>
+          ) : (
+            <>
+              <Link to={"/login"}>Login</Link>
+              <Link to={"/register"}>Register</Link>
+            </>
+          )}
+        </div>
       </div>
     </header>
   );

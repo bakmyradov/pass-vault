@@ -1,19 +1,40 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import FormContainer from "../../components/form-container";
-import Input from "../../components/input";
-import Button from "../../components/button";
-import { useRegisterMutation } from "../../slices/userApiSlice";
-import { setCredentials } from "../../slices/authSlice";
+import FormContainer from "@/components/formContainer";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useRegisterMutation } from "@/slices/userApiSlice";
+import { setCredentials } from "@/slices/authSlice";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "react-toastify";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
+
+// schema for registeration form validation passwords should match
+const schema = yup.object().shape({
+  email: yup.string().email().required("Email is required"),
+  name: yup.string().required("Name is required"),
+  password: yup
+    .string()
+    .required("Password is required")
+    .min(8, "Password should be at least 8 characters"),
+  confirmPassword: yup
+    .string()
+    .oneOf([yup.ref("password"), null], "Passwords must match")
+    .required(),
+});
 
 const RegisterPage = () => {
-  const [data, setData] = useState({
-    email: "",
-    password: "",
-    confirmPassword: "",
-    name: "",
+  const {
+    register: registerForm,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    mode: "onBlur",
+    resolver: yupResolver(schema),
   });
 
   const navigate = useNavigate();
@@ -29,19 +50,7 @@ const RegisterPage = () => {
     }
   });
 
-  const handleInputChange = (event) => {
-    const { name, value } = event.target;
-    setData((prevData) => ({ ...prevData, [name]: value }));
-  };
-
-  const submitHandler = async (e) => {
-    e.preventDefault();
-
-    if (data.password !== data.confirmPassword) {
-      toast.error("Passwords do not match");
-      return;
-    }
-
+  const submitHandler = async (data) => {
     try {
       const res = await register(data).unwrap();
       dispatch(setCredentials({ ...res }));
@@ -52,40 +61,63 @@ const RegisterPage = () => {
   };
   return (
     <FormContainer>
-      <h1 className="text-3xl font-bold mb-4 text-gray-800">Register</h1>
-      <form onSubmit={submitHandler} className="w-96 shadow-2xl px-8 py-8">
-        <Input
-          value={data.email}
-          name="email"
-          label="Email"
-          type="email"
-          onChange={handleInputChange}
-        />
-        <Input
-          value={data.name}
-          name="name"
-          label="Name"
-          type="text"
-          onChange={handleInputChange}
-        />
-        <Input
-          value={data.password}
-          name="password"
-          label="Password"
-          type="password"
-          onChange={handleInputChange}
-        />
-        <Input
-          value={data.confirmPassword}
-          name="confirmPassword"
-          label="Confirm Password"
-          type="password"
-          onChange={handleInputChange}
-        />
-        <Button disabled={isLoading}>
-          {isLoading ? "Loading..." : "Register"}
-        </Button>
-      </form>
+      <Card>
+        <CardHeader>
+          <CardTitle>Register</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form
+            onSubmit={handleSubmit(submitHandler)}
+            className="w-96 flex flex-col gap-y-6"
+          >
+            <div className="grid w-full max-w-sm items-center gap-1.5">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                {...registerForm("email")}
+                name="email"
+                type="email"
+                placeholder="Enter email"
+              />
+              <p className="text-sm text-red-500">{errors.email?.message}</p>
+            </div>
+            <div className="grid w-full max-w-sm items-center gap-1.5">
+              <Label htmlFor="name">Name</Label>
+              <Input
+                {...registerForm("name")}
+                name="name"
+                type="text"
+                placeholder="Enter name"
+              />
+              <p className="text-sm text-red-500">{errors.name?.message}</p>
+            </div>
+            <div className="grid w-full max-w-sm items-center gap-1.5">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                {...registerForm("password")}
+                name="password"
+                type="password"
+                placeholder="Enter password"
+              />
+              <p className="text-sm text-red-500">{errors.password?.message}</p>
+            </div>
+            <div className="grid w-full max-w-sm items-center gap-1.5">
+              <Label htmlFor="confirmPassword">Confirm password</Label>
+              <Input
+                {...registerForm("confirmPassword")}
+                name="confirmPassword"
+                type="password"
+                placeholder="Confirm password"
+              />
+              <p className="text-sm text-red-500">
+                {errors.confirmPassword?.message}
+              </p>
+            </div>
+            <Button disabled={isLoading}>
+              {isLoading ? "Loading..." : "Register"}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
     </FormContainer>
   );
 };

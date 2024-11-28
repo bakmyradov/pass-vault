@@ -3,13 +3,21 @@ import {
   useUserPasswordsQuery,
   useGetPasswordQuery,
   useDeletePasswordMutation,
-} from "../../slices/passwordsSlice";
-import Input from "../../components/input";
-import Button from "../../components/button";
-import CreatePasswordModal from "../../components/createPasswordModal";
-import ShowPasswordModal from "../../components/showPasswordModal";
-import UpdatePasswordModal from "../../components/updatePasswordModal";
-
+} from "@/slices/passwordsSlice";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import CreatePasswordModal from "@/components/createPasswordModal";
+import ShowPasswordModal from "@/components/showPasswordModal";
+import UpdatePasswordModal from "@/components/updatePasswordModal";
+import { Pencil2Icon, TrashIcon, EyeOpenIcon } from "@radix-ui/react-icons";
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+  SheetDescription,
+  SheetTitle,
+  SheetHeader,
+} from "@/components/ui/sheet";
 const DashboardPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [updatePassId, setUpdatePassId] = useState(null);
@@ -30,57 +38,114 @@ const DashboardPage = () => {
   return (
     <>
       <div className="min-h-screen px-20 flex py-10">
-        <div className="w-full h-screen bg-black/10 px-8">
+        <div className="w-full h-screen px-8">
           <div className="top flex justify-between items-center mb-4 pt-4">
             <h1 className="text-2xl">Passwords</h1>
-            <Button onClick={() => setIsModalOpen(true)}>Create</Button>
+            <Sheet open={isModalOpen} onOpenChange={setIsModalOpen}>
+              <SheetTrigger asChild>
+                <Button>Create</Button>
+              </SheetTrigger>
+              <SheetContent>
+                <SheetHeader>
+                  <SheetTitle>Create Password</SheetTitle>
+                  <SheetDescription>
+                    Create a new password for a service.
+                  </SheetDescription>
+                </SheetHeader>
+                <CreatePasswordModal
+                  onClose={() => {
+                    setIsModalOpen(false);
+                    refetch();
+                  }}
+                />
+              </SheetContent>
+            </Sheet>
           </div>
-          <Input hideLabel placeholder="Search passwords" />
+          <Input placeholder="Search passwords" />
           <div className="items">
             <div className="flex items-center justify-between mt-4 flex-col gap-y-4">
               {passwords.map((password) => (
                 <div
                   key={password._id}
-                  className="item px-4 py-2 bg-black/10 w-full flex justify-between"
+                  className="item rounded-md px-4 py-2 border drop-shadow-sm w-full flex justify-between"
                 >
                   <div className="left">
                     <h1 className="text-lg font-bold">{password.service}</h1>
                     <p className="text-gray-500">
-                      Credentials:
+                      Username:
                       <span className="text-gray-700 ml-1">
                         {password.username}
                       </span>
                     </p>
                   </div>
-                  <div className="right flex gap-x-4">
-                    <button
-                      className="text-blue-500"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setUpdatePassId(password._id);
+                  <div className="right flex gap-x-4 items-center">
+                    <Sheet
+                      open={updatePassId === password._id}
+                      onOpenChange={(isOpen) => {
+                        if (!isOpen) {
+                          setUpdatePassId(null);
+                        }
                       }}
                     >
-                      Edit
-                    </button>
-                    <button
-                      className="text-red-500"
+                      <SheetTrigger asChild>
+                        <Button
+                          size="icon"
+                          onClick={() => setUpdatePassId(password._id)}
+                        >
+                          <Pencil2Icon className="w-full h-full" />
+                        </Button>
+                      </SheetTrigger>
+                      <SheetContent>
+                        <SheetHeader>
+                          <SheetTitle>
+                            Update {password.service} Password
+                          </SheetTitle>
+                          <SheetDescription>
+                            Update your password for a service.
+                          </SheetDescription>
+                        </SheetHeader>
+                        <UpdatePasswordModal
+                          passwordId={updatePassId}
+                          onClose={() => {
+                            setUpdatePassId(null);
+                            refetch();
+                          }}
+                        />
+                      </SheetContent>
+                    </Sheet>
+                    <Button
+                      size="icon"
+                      className=""
                       onClick={async (e) => {
                         e.stopPropagation();
                         await deletePassword(password._id);
                         refetch();
                       }}
                     >
-                      Delete
-                    </button>
-                    <button
-                      className="text-green-500"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedPasswordId(password._id);
-                      }}
-                    >
-                      Show
-                    </button>
+                      <TrashIcon />
+                    </Button>
+                    <Sheet>
+                      <SheetTrigger asChild>
+                        <Button
+                          size="icon"
+                          className=""
+                          onClick={() => setSelectedPasswordId(password._id)}
+                        >
+                          <EyeOpenIcon />
+                        </Button>
+                      </SheetTrigger>
+                      <SheetContent>
+                        <SheetHeader>
+                          <SheetTitle>
+                            {password.service} credentials
+                          </SheetTitle>
+                        </SheetHeader>
+                        <ShowPasswordModal
+                          isFetchingPassword={isFetchingPassword}
+                          selectedPassword={selectedPassword}
+                        />
+                      </SheetContent>
+                    </Sheet>
                   </div>
                 </div>
               ))}
@@ -88,30 +153,6 @@ const DashboardPage = () => {
           </div>
         </div>
       </div>
-      {updatePassId && (
-        <UpdatePasswordModal
-          passwordId={updatePassId}
-          onClose={() => {
-            setUpdatePassId(null);
-            refetch();
-          }}
-        />
-      )}
-      {selectedPasswordId && (
-        <ShowPasswordModal
-          isFetchingPassword={isFetchingPassword}
-          selectedPassword={selectedPassword}
-          onClose={() => setSelectedPasswordId(null)}
-        />
-      )}
-      {isModalOpen && (
-        <CreatePasswordModal
-          onClose={() => {
-            setIsModalOpen(false);
-            refetch();
-          }}
-        />
-      )}
     </>
   );
 };
