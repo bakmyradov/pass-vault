@@ -10,12 +10,12 @@ export const passwordsApiSlice = apiSlice.injectEndpoints({
       }),
       // Provides a list tag for all passwords
       providesTags: (result) =>
-          result
-              ? [
-                { type: "Passwords", id: "LIST" },
-                ...result.map(({ _id }) => ({ type: "Passwords", id: _id })),
-              ]
-              : [{ type: "Passwords", id: "LIST" }],
+        result
+          ? [
+              { type: "Passwords", id: "LIST" },
+              ...result.map(({ _id }) => ({ type: "Passwords", id: _id })),
+            ]
+          : [{ type: "Passwords", id: "LIST" }],
     }),
     addPassword: builder.mutation({
       query: (data) => ({
@@ -32,7 +32,7 @@ export const passwordsApiSlice = apiSlice.injectEndpoints({
         method: "GET",
       }),
       // Provides a specific tag for the fetched password
-      providesTags: (result, error, id) => [{ type: "Passwords", id }],
+      // providesTags: (result, error, id) => [{ type: "Passwords", id }],
     }),
     deletePassword: builder.mutation({
       query: (id) => ({
