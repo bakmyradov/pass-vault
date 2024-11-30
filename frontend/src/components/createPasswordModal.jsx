@@ -30,7 +30,8 @@ const CreatePasswordModal = ({ onClose }) => {
         service: data.service,
         username: data.username,
         plaintextPassword: data.password,
-      });
+      }).unwrap();
+
       toast.success("Password created successfully");
       onClose();
     } catch (error) {

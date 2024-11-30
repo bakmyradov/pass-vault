@@ -5,9 +5,13 @@ import fetchCsrfToken, { resetCsrfToken } from "../services/csrfService";
 const baseQuery = fetchBaseQuery({
   baseUrl: "",
   prepareHeaders: async (headers) => {
-    const token = await fetchCsrfToken(); // Fetch CSRF token once
-    if (token) {
-      headers.set("X-CSRF-Token", token);
+    try {
+      const token = await fetchCsrfToken();
+      if (token) {
+        headers.set("X-CSRF-Token", token);
+      }
+    } catch (error) {
+      console.error("Failed to prepare headers:", error);
     }
     return headers;
   },
@@ -17,10 +21,7 @@ const baseQueryWithReauth = async (args, api, extraOptions) => {
   let result = await baseQuery(args, api, extraOptions);
 
   if (result.error && result.error.status === 401) {
-    // Clear CSRF token on unauthorized error
     resetCsrfToken();
-
-    // Logout and reset API state
     api.dispatch(logout());
     api.dispatch(apiSlice.util.resetApiState());
   }
@@ -31,5 +32,6 @@ const baseQueryWithReauth = async (args, api, extraOptions) => {
 export const apiSlice = createApi({
   baseQuery: baseQueryWithReauth,
   tagTypes: ["Users", "Passwords"],
+  // eslint-disable-next-line no-unused-vars
   endpoints: (builder) => ({}),
 });

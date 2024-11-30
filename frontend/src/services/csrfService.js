@@ -1,21 +1,41 @@
 let csrfToken = null;
+let csrfTokenExpiry = null;
+let csrfTokenPromise = null;
 
 const fetchCsrfToken = async () => {
-  // Fetch the CSRF token only if it is not already fetched
-  if (!csrfToken) {
-    const response = await fetch("/api/csrf-token", {
-      method: "GET",
-      credentials: "include", // Include HttpOnly cookies
-    });
-    const data = await response.json();
-    csrfToken = data.csrfToken;
+  if (csrfToken && Date.now() <= csrfTokenExpiry) {
+    return csrfToken;
   }
-  return csrfToken;
+  if (!csrfTokenPromise) {
+    csrfTokenPromise = fetch("/api/csrf-token", {
+      method: "GET",
+      credentials: "include",
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Failed to fetch CSRF token");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        csrfToken = data.csrfToken;
+        csrfTokenExpiry = Date.now() + 60 * 60 * 1000; // 1 hour
+        csrfTokenPromise = null;
+        return csrfToken;
+      })
+      .catch((error) => {
+        console.error("Error fetching CSRF token:", error);
+        csrfTokenPromise = null;
+        throw error;
+      });
+  }
+  return csrfTokenPromise;
 };
 
-// Invalidate the CSRF token (e.g., on logout)
 export const resetCsrfToken = () => {
   csrfToken = null;
+  csrfTokenExpiry = null;
+  csrfTokenPromise = null;
 };
 
 export default fetchCsrfToken;

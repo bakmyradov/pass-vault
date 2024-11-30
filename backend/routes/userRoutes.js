@@ -1,5 +1,6 @@
 import express from "express";
 import { protect } from "../middleware/authMiddleware.js";
+import csrfProtection from "../utils/csrf.js";
 
 const router = express.Router();
 import {
@@ -15,7 +16,7 @@ router.post("/auth", authUser);
 router.post("/logout", logoutUser);
 router
   .route("/profile")
-  .get(protect, getUserProfile)
-  .put(protect, updateUserProfile);
+  .get(csrfProtection, protect, getUserProfile)
+  .put(csrfProtection, protect, updateUserProfile);
 
 export default router;

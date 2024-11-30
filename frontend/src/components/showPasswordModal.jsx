@@ -61,7 +61,8 @@ const ShowPasswordModal = ({
         service: data.service,
         username: data.username,
         plaintextPassword: data.password,
-      });
+      }).unwrap();
+
       toast.success("Password updated successfully", {
         position: "bottom-right",
       });
@@ -103,7 +104,7 @@ const ShowPasswordModal = ({
                     <Button
                       onClick={() => {
                         navigator.clipboard.writeText(
-                          selectedPassword.username
+                          selectedPassword.username,
                         );
                         toast.success("Username copied to clipboard", {
                           position: "bottom-right",
@@ -136,7 +137,7 @@ const ShowPasswordModal = ({
                     <Button
                       onClick={() => {
                         navigator.clipboard.writeText(
-                          selectedPassword.password
+                          selectedPassword.password,
                         );
                         toast.success("Password copied to clipboard", {
                           position: "bottom-right",
